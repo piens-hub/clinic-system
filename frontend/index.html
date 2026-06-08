@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Clinic System</title>
+</head>
+<body>
+
+    <h1>Tiếp nhận bệnh nhân</h1>
+
+    <input id="full_name" placeholder="Họ tên">
+    <br><br>
+
+    <input id="phone" placeholder="Số điện thoại">
+    <br><br>
+
+    <input id="gender" placeholder="Giới tính">
+    <br><br>
+    <input id="dob" placeholder="Ngày sinh">
+    <br><br>
+
+    <input id="address" placeholder="Địa chỉ">
+    <br><br>
+    <button onclick="savePatient()">
+        Lưu bệnh nhân
+    </button>
+
+    <hr>
+
+    <h2>Danh sách bệnh nhân</h2>
+
+    <ul id="patient-list"></ul>
+
+<script>
+
+
+    let editingPatientId = null;
+
+    async function savePatient() {
+
+        const full_name =
+            document.getElementById("full_name").value;
+
+        const phone =
+            document.getElementById("phone").value;
+
+        const gender =
+            document.getElementById("gender").value;
+
+        const dob =
+            document.getElementById("dob").value;
+
+        const address =
+            document.getElementById("address").value;
+
+        if (editingPatientId === null) {
+
+            await fetch(
+                "http://127.0.0.1:8000/patients",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        full_name,
+                        phone,
+                        gender,
+                        dob,
+                        address
+                    })
+                }
+            );
+
+        } else {
+
+            await fetch(
+                `http://127.0.0.1:8000/patients/${editingPatientId}`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        full_name,
+                        phone,
+                        gender,
+                        dob,
+                        address
+                    })
+                }
+            );
+
+            editingPatientId = null;
+        }
+
+        loadPatients();
+    }
+
+    async function deletePatient(id) {
+
+        await fetch(
+            `http://127.0.0.1:8000/patients/${id}`,
+            {
+                method: "DELETE"
+            }
+        );
+
+        loadPatients();
+    }
+
+    async function loadPatients() {
+
+        const response = await fetch(
+            "http://127.0.0.1:8000/patients"
+        );
+
+        const patients = await response.json();
+
+        const list =
+            document.getElementById("patient-list");
+
+        list.innerHTML = "";
+
+        patients.forEach(patient => {
+
+            list.innerHTML += `
+                <li>
+                    ${patient.full_name}
+                    |
+                    ${patient.phone}
+                    |
+                    ${patient.dob}
+                    |
+                    ${patient.address}
+
+                    <button onclick="editPatient(
+                        ${patient.id},
+                        '${patient.full_name}',
+                        '${patient.phone}',
+                        '${patient.gender}',
+                        '${patient.dob}',
+                        '${patient.address}'
+                    )">
+                        Sửa
+                    </button>
+
+                    <button onclick="deletePatient(${patient.id})">
+                        Xóa
+                    </button>
+                </li>
+            `;
+        });
+    }
+
+    loadPatients();
+function editPatient(
+    id,
+    full_name,
+    phone,
+    gender,
+    dob,
+    address
+) {
+
+    editingPatientId = id;
+
+    document.getElementById("full_name").value =
+        full_name;
+
+    document.getElementById("phone").value =
+        phone;
+
+    document.getElementById("gender").value =
+        gender;
+
+    document.getElementById("dob").value =
+        dob;
+
+    document.getElementById("address").value =
+        address;
+}
+
+</script>
+
+</body>
+</html>
