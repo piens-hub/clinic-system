@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Quản lý dịch vụ</title>
+</head>
+<body>
+
+    <h1>Quản lý dịch vụ</h1>
+
+    <input id="name" placeholder="Tên dịch vụ">
+    <br><br>
+
+    <input id="price" placeholder="Giá">
+    <br><br>
+
+    <input id="description" placeholder="Mô tả">
+    <br><br>
+
+    <button onclick="saveService()">
+        Lưu dịch vụ
+    </button>
+
+    <hr>
+
+    <h2>Danh sách dịch vụ</h2>
+
+    <ul id="service-list"></ul>
+
+<script>
+
+async function saveService() {
+
+    const name =
+        document.getElementById("name").value;
+
+    const price =
+        document.getElementById("price").value;
+
+    const description =
+        document.getElementById("description").value;
+
+    await fetch(
+        "http://127.0.0.1:8000/services",
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                name,
+                price: Number(price),
+                description
+            })
+        }
+    );
+
+    loadServices();
+}
+
+async function loadServices() {
+
+    const response = await fetch(
+        "http://127.0.0.1:8000/services"
+    );
+
+    const services = await response.json();
+
+    const list =
+        document.getElementById("service-list");
+
+    list.innerHTML = "";
+
+    services.forEach(service => {
+
+        list.innerHTML += `
+            <li>
+                ${service.name}
+                |
+                ${service.price.toLocaleString()} VNĐ
+                |
+                ${service.description}
+            </li>
+        `;
+    });
+}
+
+loadServices();
+
+</script>
+
+</body>
+</html>

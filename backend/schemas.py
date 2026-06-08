@@ -7,3 +7,8 @@ class PatientCreate(BaseModel):
 
     dob: str
     address: str
+
+class ServiceCreate(BaseModel):
+    name: str
+    price: int
+    description: str = ""

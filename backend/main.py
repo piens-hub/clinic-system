@@ -5,9 +5,9 @@ from database import engine
 from database import SessionLocal
 
 from models import Base
-from models import Patient
+from models import Patient, Service
 
-from schemas import PatientCreate
+from schemas import PatientCreate, ServiceCreate
 
 app = FastAPI()
 app.add_middleware(
@@ -92,3 +92,69 @@ def update_patient(
     db.commit()
 
     return {"message": "Updated"}
+
+@app.post("/services")
+def create_service(service_data: ServiceCreate):
+
+    db: Session = SessionLocal()
+
+    service = Service(
+        name=service_data.name,
+        price=service_data.price,
+        description=service_data.description
+    )
+
+    db.add(service)
+    db.commit()
+    db.refresh(service)
+
+    return service
+
+@app.get("/services")
+def get_services():
+
+    db: Session = SessionLocal()
+
+    services = db.query(Service).all()
+
+    return services
+
+@app.delete("/services/{service_id}")
+def delete_service(service_id: int):
+
+    db: Session = SessionLocal()
+
+    service = db.query(Service).filter(
+        Service.id == service_id
+    ).first()
+
+    if not service:
+        return {"message": "Service not found"}
+
+    db.delete(service)
+    db.commit()
+
+    return {"message": "Deleted"}
+
+@app.put("/services/{service_id}")
+def update_service(
+    service_id: int,
+    service_data: ServiceCreate
+):
+
+    db: Session = SessionLocal()
+
+    service = db.query(Service).filter(
+        Service.id == service_id
+    ).first()
+
+    if not service:
+        return {"message": "Service not found"}
+
+    service.name = service_data.name
+    service.price = service_data.price
+    service.description = service_data.description
+
+    db.commit()
+
+    return {"message": "Updated"}        
